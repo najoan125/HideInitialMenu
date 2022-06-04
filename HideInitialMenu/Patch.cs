@@ -41,6 +41,18 @@ namespace HideInitialMenu
             }
         }
 
+        [HarmonyPatch(typeof(RDEditorUtils), "IsNullOrEmpty")]
+        public static class isNullPatch
+        {
+            public static void Postfix(ref bool __result)
+            {
+                if (isUpdate)
+                {
+                    __result = true;
+                }
+            }
+        }
+
         [PatchCondition("HideInitialMenu.scnLevelSelectUpdate","scnLevelSelect","Update")]
         public static class UpdatePatch
         {
