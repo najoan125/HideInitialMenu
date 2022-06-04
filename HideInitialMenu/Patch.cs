@@ -7,21 +7,37 @@ using System.Threading.Tasks;
 
 namespace HideInitialMenu
 {
-    internal static class Patcher { 
-        [PatchCondition("HideInitialMenu.scnCLSUpdate", "scnCLS", "Start")]
+    internal static class Patcher {
+        public static bool isUpdate = false;
+
+        [HarmonyPatch(typeof(scnCLS),"Update")]
         public static class Patch
         {
             public static void Prefix(scnCLS __instance)
             {
-                if (!Main.featured)
+                if (!Main.featured && !Daily && isUpdate)
                 {
                     __instance.WorkshopLevelsPortal();
                 }
-                else if (Main.featured)
+                else if (Main.featured && isUpdate)
                 {
                     Main.featured = false;
                     __instance.FeaturedLevelsPortal();
                 }
+                else if (Daily)
+                {
+                    Daily = false;
+                }
+                isUpdate = false;
+            }
+        }
+
+        [HarmonyPatch(typeof(scnCLS),"Start")]
+        public static class StartPatch
+        {
+            public static void Prefix()
+            {
+                isUpdate = true;
             }
         }
 
@@ -39,7 +55,15 @@ namespace HideInitialMenu
                     GCS.sceneToLoad = "scnCLS";
                     scrUIController.instance.WipeToBlack(WipeDirection.StartsFromRight, null);
                 }
+                else if (RDEditorUtils.CheckForKeyCombo(true, false, UnityEngine.KeyCode.D))
+                {
+                    Daily = true;
+                    GCS.sceneToLoad = "scnCLS";
+                    scrUIController.instance.WipeToBlack(WipeDirection.StartsFromRight, null);
+                }
             }
         }
+
+        public static bool Daily = false;
     }
 }
